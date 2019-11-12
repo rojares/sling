@@ -11,4 +11,4 @@ Crossbown ikkuna on jaettu horisontaalisesti kahteen alueeseen. Vasemmalla lista
 
 Keskeisiä Swing komponentteja on JTree ja JTable. Ennen kaikkea JTablea pitää kustomoida paljon tämän projektin aikana.
 
-![Wireframe](crossbow%20wireframe.jpg)
+![Wireframe](crossbow_wireframe.jpg)
