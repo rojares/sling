@@ -1,3 +1,5 @@
+Nota Bene: Sekoitan täällä surutta suomea ja englantia mutta sehän sopii hyvin tietojenkäsittelytieteen laitoksen linjaan.
+
 # sling (and crossbow)
 
 This is a project initially made for course Ohjelmistotekniikka at the University of Helsinki. The course makes a few demands that affect the structure of this project.
