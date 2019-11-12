@@ -8,6 +8,6 @@ Sling is a database client program that implements the required network protocol
 
 Crossbow is a graphical database client that uses Sling to access David, relational DBMS. It provides user the ability to browse database objects in the database. Manipulate those objects and make queries agains the relvars. But unlike typical database clients it is not limited just for database management. It also tries to develop features found in a spreadsheet program so that a user could use database as a backend for his spreadsheet giving much better structure and machinery for efficient data management. David could be embedded inside the Crossbow and database could be stored inside one file just like in spreadsheet programs like LibreOffice Calc and Microsoft Excel.
 
-## Dokumentaatio
+## Documentation
 
-[Vaatimusmäärittely](https://github.com/rojares/sling/blob/master/dokumentaatio/Vaatimusmaarittely.md)
+[Requirements](https://github.com/rojares/sling/blob/master/dokumentaatio/Requirements.md)
