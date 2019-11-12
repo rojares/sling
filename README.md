@@ -14,4 +14,6 @@ Because in the beginning there is not yet a working version of David database I 
 
 ## Documentation
 
-[Requirements](https://github.com/rojares/sling/blob/master/dokumentaatio/Requirements.md)
+[Vaatimusmäärittely](https://github.com/rojares/sling/blob/master/dokumentaatio/Requirements.md)
+
+[Tuntikirjanpito](https://github.com/rojares/sling/blob/master/dokumentaatio/tuntikirjanpito.md)
