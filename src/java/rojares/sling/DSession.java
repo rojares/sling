@@ -14,9 +14,10 @@ import java.util.Map;
  */
 public class DSession implements AutoCloseable {
 
-    // EOT = END OF TRANSMISSION
+    // EOT = END OF TRANSMISSION, this is used to signal to server that the request is over and the client is waiting
+    // for response
     static String EOT = "\u0004";
-    // I suppose that this will be CRLF in windows and LF on other platforms
+    // Sling wire protocol recognizes only LF as a newline character. CR is always removed when normalising input.
     static String NEWLINE = "\n";
 
     SlingParams params;
@@ -38,10 +39,10 @@ public class DSession implements AutoCloseable {
         socket = new Socket();
         try {
             // if the server does not answer in 5 seconds then something is seriously wrong.
-            socket.connect(params.getServerAddress(), 10000);
+            socket.connect(serverAddress, 5000);
             // network protocol is encoded in UTF-8
-            out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8), true);
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+            out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
+            in = new BufferedReader(InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
         }
         catch (IOException ioe) {
             throw new SlingException(ioe);
@@ -55,6 +56,7 @@ public class DSession implements AutoCloseable {
                 + "password:" + params.getPassword()
                 + EOT
             );
+            out.flush();
 
             // successful response for authentication is empty
             DResponse response = new DResponse(in);
