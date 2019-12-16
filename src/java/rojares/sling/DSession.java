@@ -75,6 +75,9 @@ public class DSession implements AutoCloseable {
         }
     }
 
+    /**
+     * Only one socket per session and therefore it needs to be synchronized.
+     */
     public synchronized DResult request(String deestarInput) {
         if (out == null) throw new SlingException("Session is closed.");
         out.print(
@@ -82,7 +85,7 @@ public class DSession implements AutoCloseable {
                 + EOT
         );
         DResponse response = new DResponse(in);
-        if (response.isError()) throw response.getException();
+        if (response.isError()) throw new SlingException("...", DError);
         else return response.getResult();
     }
 

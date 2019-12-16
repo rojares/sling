@@ -1,55 +1,42 @@
 package rojares.sling;
 
-/**
- * DResult has format: name=value[US]name=value[US]...[US]name=value
- * where name is an identifier (= ascii string) and value is a literal of a value conforming to one of
- * the types supported by David.
- * The currently supported literals are:
- * primitive literals:
- * INTEGER:sequence_of_one_or_more_digits_and_optional_minus_sign) | INTEGER:NULL
- * BOOLEAN:TRUE|FALSE | BOOLEAN:NULL
- * STRING:sequence_of_zero_or_more_unicode_characters | STRING:NULL
- * collection literals:
- * TABLE {
- *      HEADER [attribute_definition_list]
- *      BODY {
- *          [ primitive_literal, ...]*
- *      }
- *  }
- */
+import rojares.sling.parser.ResponseParser;
+import rojares.sling.type.*;
+
+import java.util.*;
+import java.io.*;
+
+
 public class DResult {
 
-    // US = Unit Separator, 1F
-    static String US = "\u001F";
+    Map<String, DValue> resultMap = new HashMap<String, DValue>();
 
-    Map<String, Object> resultMap = new HashMap<String, Object>();
-
-    public DResult(BufferedReader in) throws SlingException {
-        String[] values = SlingUtils.readUntilEOT(in).split(US);
-        for(String value : values) {
-            KeyValue kv = parse(value);
-            resultMap.put(kv.getKey(), kv.getValue());
-        }
+    public DResult(BufferedReader in) {
+        this.resultMap = ResponseParser.parse(in);
     }
 
-    private KeyValue parse(String value) {
-
+    /**
+     * If the requested value is not of the specified type then a ClassCastException is thrown which is a
+     * RuntimeException.
+     * @return null means that the variable name did not exist in the result. If the associated value was null it is
+     * stored as value of the returned DInteger
+     */
+    public DInteger getInteger(String name) {
+        return (DInteger) resultMap.get(name);
     }
 
-    public Long getInteger(String name) {
-
+    public DBoolean getBoolean(String name) {
+        return (DBoolean) resultMap.get(name);
     }
 
-    public Boolean getBoolean(String name) {
-
-    }
-
-    public String getString(String name) {
-
+    public DString getString(String name) {
+        return (DString) resultMap.get(name);
     }
 
     public DTable getTable(String name) {
-
+        return (DTable) resultMap.get(name);
     }
+
+
 
 }

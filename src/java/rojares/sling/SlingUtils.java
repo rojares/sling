@@ -23,4 +23,5 @@ public class SlingUtils {
     public static String normalizeInput(String input) {
         return input.replaceAll(MATCH_CONTROL_CHARACTERS_EXCEPT_TAB_LF, "");
     }
+
 }
