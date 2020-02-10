@@ -1,0 +1,46 @@
+package rojares.sling;
+
+/**
+ * I can't decide if I should make this runtime or not. DavidException represents different exceptions that occurred
+ * while executing the interaction input on the serverside. These exceptions are often transferred all the way to the
+ * user. Therefore they have more structure so that they can be localized and properly shown to the user.
+ */
+public class DavidException extends SlingException {
+
+    /*
+    errorCodes follow hierarchical dot notation, are documented in David documentation and can be expanded by the
+    user. Example: SYNTAX.OPERATOR.<OPERATOR_NAME>.23 or CONSTRAINT.USER.<CONSTRAINT_NAME>.3. The syntax is not
+    clear yet at the time of the writing.
+     */
+    String errorCode;
+
+    /*
+    Whenever a David error is defined it must contain a textual message in english language. This is a fallback
+    mechanism that can be used when these exceptions are not shown to user or only developers.
+    This message can be localized or customized by using errorCode as a key to retrieve another message in different
+    language or with more user friendly explanation.
+     */
+    String englishMessage;
+
+    /*
+    When error occurs it is important to show to user what part of the interaction input caused the exception. When
+    the input is very large then only some lines before and after the exception causing area is included for context.
+    The linecount of how much context should be shown is configurable by the client. Also the start and end positions
+     of the exception causing input are provided so that the client can present the exception causing input nicely.
+     */
+    String exceptionCausingInput;
+    // the start counted from the beginning of exceptionCausingInput
+    int exceptionStart;
+    // the end counted from the beginning of exceptionCausingInput
+    int exceptionEnd;
+
+    public DavidException(String errorCode, String englishMessage, String exceptionCausingInput, int exceptionStart, int exceptionEnd) {
+        // englishMessage is set as exception message
+        super(englishMessage);
+        this.errorCode = errorCode;
+        this.englishMessage = englishMessage;
+        this.exceptionCausingInput = exceptionCausingInput;
+        this.exceptionStart = exceptionStart;
+        this.exceptionEnd = exceptionEnd;
+    }
+}
