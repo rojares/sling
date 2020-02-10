@@ -37,6 +37,8 @@ public class DResult {
         return (DTable) resultMap.get(name);
     }
 
-
+    public void reset() {
+        this.resultMap.clear();
+    }
 
 }

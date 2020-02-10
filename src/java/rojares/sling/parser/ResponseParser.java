@@ -18,7 +18,7 @@ import java.util.function.IntPredicate;
  * identifier := [a-zA-Z_][a-zA-Z_0-9]*
  * literal := primitive_literal | collection_literal
  *
- * primitive_literal := boolean_literal | I:integer_literal | S:string_literal
+ * primitive_literal := B:boolean_literal | I:integer_literal | S:string_literal
  * boolean_literal := B:(TRUE|FALSE|NULL) (case-insensitive)
  * integer_literal := I:(-?[0-9]+|NULL) (null is case-insensitive)
  * string_literal := S:(>sequence_of_zero_or_more_unicode_characters|NULL) (null is case-insensitive)
