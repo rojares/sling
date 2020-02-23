@@ -23,7 +23,6 @@ public class DSession implements AutoCloseable {
 
     DSessionParams params;
 
-
     public DSession(DSessionParams params) {
         this.params = params;
     }
@@ -79,7 +78,7 @@ public class DSession implements AutoCloseable {
              Only a failed authentication will return a DavidException
              */
             DResponse response = new DResponse().readResponse(in);
-            if (response.isError()) throw new response.getException();
+            if (response.isError()) throw new response.getDError();
 
             // let's send the initial params. In case of successful configuration the result is empty
             out.print(this.params.getRequestString());

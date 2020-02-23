@@ -1,5 +1,8 @@
 package rojares.sling;
 
+import java.io.IOException;
+import java.io.Reader;
+import java.net.SocketTimeoutException;
 import java.util.regex.Pattern;
 
 /**
@@ -10,18 +13,18 @@ import java.util.regex.Pattern;
  * Perl 6 seems to give some support of dealing with characters outside of BMP defining methods like bytes, codes and
  * graphs instead of a length method. But it is not clear whether for example reverse works.
  * The most robust solution would be to store characters in UTF-32 in which case all of these issues could be solved.
- * And Python from version 3.3 onwards does excatly that.
+ * And Python from version 3.3 onwards does exactly that.
  *
- * So for now David supports only BMP characters and if a String contains surrogate pairs An exception is raised.
+ * For now David supports only BMP characters and if a String contains surrogate pairs An exception is raised.
  * Correctness above compatibility!
  * From business perspective this will cause problems only when exporting software to China.
  *
- * What this means is that surrogate pairs need to be removed from java's UTF-16 strings. However when strings are
- * encoded to network we use UTF-8 and the surrogate pair concept disappears. So in case the string that user sends
- * to server contains surrogate pairs which is the same as unicode characters (code points) outside of BMP then the
- * server throws the appropriate exception. The client does not check for those.
+ * If the user sends a string to server with surrogate pairs, they disappear when the string is encoded with utf-8 to
+ * network. However when the server receives that string it realizes that it contains code points outside of BMP and it
+ * will throw and exception. Therefore we don't bother checking the strings for surrogate pairs on the clientside.
  *
- * The client
+ * We could allow codepoints outside of BMP on the serverside but because the server is implemented in java that has
+ * the above mentioned issues with codepoints outside of BMP we have decided to exclude them for now.
  *
  * This class contains all static variables and methods used in the library.
  */
@@ -31,15 +34,23 @@ public class Sling {
     Timeout for reading response
     If we have to wait idle 5 seconds and the EOT does not come we throw a timeout exception
      */
-    public static int RESPONSE_TIMEOUT = 5000;
+    public static int RESPONSE_TIMEOUT = 5_000;
+
+    /*
+    We set a limit to how large a response can be. This limit is expressed in characters (codepoints) in BMP.
+    When encoded in utf-8 they take 1-3 bytes but when stored into memory they take 2 bytes.
+    So the result will consume approximately 2 * limit of bytes in memory
+    Now I have set the limit to 20 million characters which will consume around 40MB of memory.
+     */
+    public static int RESPONSE_MAX_SIZE_IN_CHARS = 20_000_000;
 
     // EOT = END OF TRANSMISSION, this is used to signal to server that the request is over and the client is waiting
     // for response
-    public static String C_EOT = "\u0004";
-    // When Sling inserts a newline it uses the unix convention
-    public static String C_NEWLINE = "\n";
-    static String C_ACK = "\u0006";
-    static String C_NAK = "\u000F";
+    public static char C_EOT = 4;
+    // When Sling inserts a newline it uses only LF character
+    public static char C_NEWLINE = 10;
+    static char C_ACK = 6;
+    static char C_NAK = 21;
 
     // unicode defines 65 control characters, however David excludes from those control characters only first 32
     // control characters (the classic 0-31) and allows control characters between 128-159 that had printable
@@ -49,6 +60,75 @@ public class Sling {
     public static Pattern PTR_CC_EXCEPT_3 = Pattern.compile("[\\x00-\\x1F&&[^\\t\\r\\n]]+");
     // Newline is either LF (unix) alone or CRLF (windows) combination. Lonely CR is not considered newline.
     public static Pattern PTR_NEWLINE = Pattern.compile("\\r?\\n");
+
+    /**
+     * Reads from a reader characters until it matches a certain character or timeout occurs or the char limit is exceeded.
+     * Returns all read characters in StringBuilder unless discard was true in which case the StringBuilder is empty.
+     */
+    public static StringBuilder readUntil(Reader reader, char endChar, int maxlen, boolean discard) {
+
+        // declare local variables
+        StringBuilder response = new StringBuilder();
+        int charCount = 0;
+        char chr;
+
+        try {
+            while(true) {
+                chr = safeRead(reader, response);
+
+                // response is fully received
+                if (chr == endChar) return response;
+
+                // a response character was received so we add it to our buffer
+                if (!discard) response.append(chr);
+
+                // check if the response is longer than allowed
+                charCount++;
+                if (charCount > maxlen) {
+                    throw new SlingException(
+                        "Protocol error: The response from server was too long. The upper size limit for the " +
+                        "response was " + maxlen + " characters and the server should know that. " +
+                        "Please contact the developer of David! " + printPartialResponseError(response)
+                    );
+                }
+            }
+        }
+        catch (SocketTimeoutException ste) {
+            throw new SlingException(
+                "Input stream timed out after " + RESPONSE_TIMEOUT + "ms before the response was fully " +
+                "received from server. " + printPartialResponseError(response)
+            );
+        }
+        catch (IOException ioe) {
+            throw new SlingException(
+                "Input stream encountered IO error with message: " + ioe.getMessage() + "\n" +
+                printPartialResponseError(response)
+            );
+        }
+    }
+
+    static char safeRead(Reader reader, StringBuilder response) {
+        // Frankly I don't know what end-of-stream means. I suppose that if inputstream or socket is closed
+        // then we will get IOException but the read method says that -1 is a possible return value and
+        // signifies end-of-stream. This check is not good for performance.
+        int ci = reader.read();
+        if (ci == -1) {
+            throw new SlingException(
+                "Socket input stream was closed while trying to read response from server. " +
+                printPartialResponseError(response)
+            );
+        }
+        return (char) ci;
+    }
+
+    static String printPartialResponseError(StringBuilder resp) {
+        int len = resp.length();
+        int end = Math.min(len, 100);
+        return
+            "Partial response was " + len + " characters. " +
+            "The start of the response received was:\n" + resp.substring(0, end)
+        ;
+    }
 
     /**
      * Checks for control characters

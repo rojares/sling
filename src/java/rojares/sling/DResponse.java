@@ -1,6 +1,7 @@
 package rojares.sling;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
@@ -9,64 +10,81 @@ import java.net.SocketTimeoutException;
  */
 public class DResponse {
 
-
-
     boolean isError = false;
     DResult result = null;
     DError error = null;
 
     /**
+     * DResponse keeps reading from a socket until it receives EOT or a timeout occurs.
+     * In order to avoid OOM exception we also set a limit to how many characters a response can contain.
      * Resets all fields at the beginning so that the same DResponse object can be used multiple times
      * This method will read
+     * This method throws SlingException or it's subclass DavidException which are both runtime exceptions.
      */
-    public DResponse readResponse(BufferedReader in) throws SlingException {
+    public DResponse readResponse(BufferedReader reader) {
 
+        // reset instance variables
         this.isError = false;
         this.result.reset();
         this.error = null;
 
         try {
-
-
+            // First thing we do is read the whole response (everything until EOT) in String and based on the first
+            // character we create either DResult or DError
+            Sling.readUntil(reader, Sling.C_EOT, )
             // First character of the input should always be ACK or NAK
-            char ci = (char) in.read();
+            int ci = Sling.safeRead(reader, ;
+            if (ci == -1) throw new SlingException("Socket input stream was closed while trying to read response from server.");
+            char chr = (char) ci;
             switch (ci) {
                 case Sling.C_ACK:
-                    // read the result
-                    this.result = this.result.readResult(in);
+                    // this will throw SlingException if there is any issue with the response
+                    this.result = this.result.readResult(reader);
                     break;
                 case Sling.C_NAK:
                     this.isError = true;
-                    this.error = this.error.readError(in);
+                    // this will throw SlingException if there is any issue with the response
+                    this.error = this.error.readError(reader);
                     break;
                 default:
-                    // should never happen but maybe during development or deliberate attack
+                    // The first character must always be ACK or NAK but we have to prepare the client for any kind of input.
                     // let's try to read until EOT to clear out the rest of the response
-                    ;
-                    throw new SlingException("Server response could not be recognized. Unexpected response started with " +
-                            "character: " + ci + " and continued like this: " + Sling.readUntilEOT(in));
+                    try {
+                        String restOfTheResponse = Sling.readUntilEOT(reader);
+                        throw new SlingException(
+                            "Protocol error: Server response started with character (in decimal): " + chr + "\n" +
+                            "Response must always start with ACK(6) or NAK(21)." +
+                            "The rest of the response was:\n" + restOfTheResponse
+                        );
+                    } catch (SlingException se) {
+                        throw new SlingException(
+                            "Protocol error: Server response started with character (in decimal): " + chr +
+                            "\nResponse must always start with ACK(6) or NAK(21)." +
+                            "Unable to read the rest of the response because:\n" + se.getMessage()
+                        );
+                    }
+                    break;
             }
             return this;
         }
         catch (SocketTimeoutException ste) {
-            throw new SlingException("Server's response stayed idle " + Sling.RESPONSE_TIMEOUT + "ms before EOT " +
-                    "was encountered. Response received so far was: " + ci +
-                    "recognized. Unexpected response " +
-                    "started with " +
-                    "character: " + ci + " and continued like this: " + Sling.readUntilEOT(in));
+            throw new SlingException(
+                "Input stream timed out after " + Sling.RESPONSE_TIMEOUT + "ms before even the first character was " +
+                "received from server."
+            );
         }
 
     }
 
     public boolean isError() {
-        return isError;
+        return this.isError;
     }
 
-    public SlingSuccess getDResult() {
-        return result;
+    public DResult getDResult() {
+        return this.result;
     }
 
     public DError getDError() {
-        return error;
+        return this.error;
     }
 }
