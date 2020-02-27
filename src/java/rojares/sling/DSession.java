@@ -12,9 +12,14 @@ import java.nio.charset.StandardCharsets;
  * to reconnect using the same DSession object, however there is no clear performance difference to be gained.
  *
  * So the client code will look something like this:
- * DSessionParams params = new DSessionParams(...);
+ * DSessionParams params = new DSessionParams()
+ *      .setAddress(new InetSocketAddress(hostname, port))
+ *      .setUsername(username)
+ *      .setPassword(password)
+ *      .setTimeout(timeout)
+ *      .setMaxTuples(maxtuples)
+ * ;
  * DSession session = new DSession(params);
- * session.connect(new InetSocketAddress(hostname, port), username, password);
  * DResult result = session.request(deestarInput);
  * ... make as many requests as you want ...
  * session.close()
@@ -77,13 +82,9 @@ public class DSession implements AutoCloseable {
              In case of successful authentication the DResult is empty
              Only a failed authentication will return a DavidException
              */
-            DResponse response = new DResponse().readResponse(in);
+            DResponse response = new DResponse(in, this.params);
             if (response.isError()) throw new response.getDError();
 
-            // let's send the initial params. In case of successful configuration the result is empty
-            out.print(this.params.getRequestString());
-            response.readResponse(in);
-            if (response.isError()) throw new response.getException();
             // bind DSessionParams to this open session
             params.bind(this);
         }

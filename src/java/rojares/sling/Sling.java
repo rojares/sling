@@ -74,14 +74,11 @@ public class Sling {
 
         try {
             while(true) {
-                chr = safeRead(reader, response);
-
+                chr = readChar(reader, response);
                 // response is fully received
                 if (chr == endChar) return response;
-
                 // a response character was received so we add it to our buffer
                 if (!discard) response.append(chr);
-
                 // check if the response is longer than allowed
                 charCount++;
                 if (charCount > maxlen) {
@@ -107,10 +104,12 @@ public class Sling {
         }
     }
 
-    static char safeRead(Reader reader, StringBuilder response) {
-        // Frankly I don't know what end-of-stream means. I suppose that if inputstream or socket is closed
-        // then we will get IOException but the read method says that -1 is a possible return value and
-        // signifies end-of-stream. This check is not good for performance.
+    /*
+    Reader's read method says that -1 is a possible return value and it signifies end-of-stream.
+    Frankly I don't know what end-of-stream means. I suppose that if inputstream or socket is closed
+    then it will throw IOException. This check is not good for performance so maybe it could be removed?
+     */
+    static char readChar(Reader reader, StringBuilder response) throws IOException {
         int ci = reader.read();
         if (ci == -1) {
             throw new SlingException(

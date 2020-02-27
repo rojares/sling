@@ -1,8 +1,6 @@
 package rojares.sling;
 
 import java.io.BufferedReader;
-import java.io.IOException;
-import java.net.Socket;
 import java.net.SocketTimeoutException;
 
 /**
@@ -21,19 +19,13 @@ public class DResponse {
      * This method will read
      * This method throws SlingException or it's subclass DavidException which are both runtime exceptions.
      */
-    public DResponse readResponse(BufferedReader reader) {
-
-        // reset instance variables
-        this.isError = false;
-        this.result.reset();
-        this.error = null;
-
+    public DResponse(BufferedReader reader) {
         try {
             // First thing we do is read the whole response (everything until EOT) in String and based on the first
             // character we create either DResult or DError
             Sling.readUntil(reader, Sling.C_EOT, )
             // First character of the input should always be ACK or NAK
-            int ci = Sling.safeRead(reader, ;
+            int ci = Sling.readChar(reader, ;
             if (ci == -1) throw new SlingException("Socket input stream was closed while trying to read response from server.");
             char chr = (char) ci;
             switch (ci) {
