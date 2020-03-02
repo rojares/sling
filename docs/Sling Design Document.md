@@ -206,6 +206,61 @@ Then the user sends D* statements (zero or more) to the server as part of a requ
 
 One session can run only one interaction at a time and one interaction corresponds to one transaction on the server side. This transaction is auto-committed at the end of a successful interaction unless a 2-phase commit is requested (not implemented yet).
 
-### 4. Protocol and literals on the wire
+## 4. Protocol and literals on the wire
 
+The protocol is very simple.
 
+### 4.1 Server-side
+
+1. Serversocket waits for socket connection on default port 3434
+2. Connection is opened and new socket created
+3. Server waits for authentication (until timeout)
+4. If authentication is successful a new session is created on the server side (else exception is returned and the server waits for a new authentication attempt)
+5. server waits for request, once received executes it and returns result or exception
+6. Step 5 is repeated until the socket connection is closed
+
+### 4.2 Client-side
+
+1. User created session parameters
+2. User constructs session which opens connection and tries to authenticate and send server parameters
+3. Client sends request and waits for result or exception
+4. Step 3 is repeated until session is closed
+
+### 4.3 Data formats
+
+D* strings contain unicode BMP characters. However the first 32 characters called control characters are excluded except 3: TAB, CR, LF.
+
+This way the control characters can be used to orchestra data transfer over the network.
+
+Request and response are ended with End-Of-Transmission (EOT, hex:4) character.
+
+Response starts with Acknowledgment (ACK, hex:6) or 	Negative Acknowledgement (NAK, hex:15) character. After which comes either the result or Exception.
+
+The result is determined by the D* input sent by user in the request. It is a sequence of name-value pairs.
+
+Here I present the result in ebnf format. The control characters used are:
+
+* File Separator, FS, hex: 1C
+* Group Separator, GS, hex: 1D
+* Record Separator, RS, hex: 1E
+* Unit Separator, US, hex: 1F
+
+```ebnf
+result: name_value?( '\u001C' name-value)*;
+name_value: identifier '=' dvalue_literal;
+identifier: [a-zA-Z_][a-zA-Z_0-9]*;
+dvalue_literal: primitive_literal | collection_literal;
+
+primitive_literal := boolean_literal | integer_literal | string_literal;
+boolean_literal: 'B:' ( 'TRUE' | 'FALSE' | 'NULL' ); // case-insensitive;
+integer_literal: 'I:' ( '-'?[0-9]+ | 'NULL' ); // case-insensitive;
+string_literal: 'S:' ( '>' [bmp_minus_control3]* ) | 'NULL'; // case-insensitive;
+
+collection_literal: table_literal;
+table_literal: header_literal '\u001D' body_literal;
+header_literal: 'HEADER' attribute_literal? ( '\u001F' attribute_literal)*;
+attribute_literal: primitive_type ':' identifier;
+primitive_type: ( 'B' | 'I' | 'S' );
+body_literal: 'BODY' row_literal? ( '\u001E' row_literal)*;
+row_literal: primitive_literal? ( '\u001F' primitive_literal)*;
+```
