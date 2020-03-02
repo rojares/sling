@@ -198,7 +198,14 @@ DResult result = session.request(deestarInput);
 // ... make as many requests as you want ...
 session.close();
 ```
+First user configures parameters for his database session. Some parameter are for authentication, some to configure the session on the client-side and some to configure the session on the server-side.
 
-### 4. Canonical string representations for all the types
+When session in constructed a socket is opened to the server and the session is authenticated.
 
-TBD.
+Then the user sends D* statements (zero or more) to the server as part of a request and receives results (zero or more) from the server as part of the response. Request-response pair is called interaction.
+
+One session can run only one interaction at a time and one interaction corresponds to one transaction on the server side. This transaction is auto-committed at the end of a successful interaction unless a 2-phase commit is requested (not implemented yet).
+
+### 4. Protocol and literals on the wire
+
+
