@@ -264,3 +264,27 @@ primitive_type: 'B' | 'I' | 'S';
 body_literal: 'BODY' row_literal? ( '\u001E' row_literal )*;
 row_literal: primitive_literal? ( '\u001F' primitive_literal )*;
 ```
+
+The DavidException that comes after NAK has the following format:
+
+```
+errorcode '\u001C' englishMessage '\u001C' exceptionCausingInput '\u001C' exceptionStart '\u001C' exceptionPoint '\u001C' exceptionEnd
+```
+
+* _errorcode_  
+    errorCodes follow hierarchical dot notation. They are documented in David documentation and can be expanded by the
+      user.  
+    __Examples:__  
+    "SYNTAX.OPERATOR.<OPERATOR_NAME>.23"  
+    "CONSTRAINT.USER.<CONSTRAINT_NAME>.3"  
+    The syntax is not clear yet at the time of the writing.
+* _englishMessage_  
+    Whenever a David error is defined it must contain a textual message in english language. This is a fallback         mechanism that can be used when these exceptions are not shown to user or only developers. This message can be localized or customized by using errorCode as a key to retrieve another message in different language or with more user friendly explanation.
+* _exceptionCausingInput_  
+    When error occurs it is important to show to user what part of the interaction input caused the exception. When the input is very large then only some lines before and after the exception causing area is included for context. The linecount of how much context should be shown is configurable by the client. Also the start and end positions of the exception causing input are provided so that the client can present the exception causing input nicely.
+* _exceptionStart_  
+    The start of the error statement counted from the beginning of exceptionCausingInput
+* _exceptionPoint_  
+    This is the most crucial position that caused the exception and must be between (inclusive) start and end
+* _exceptionEnd_  
+    The end of the error statement counted from the beginning of exceptionCausingInput

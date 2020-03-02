@@ -3,14 +3,14 @@ package rojares.sling;
 import java.util.regex.Pattern;
 
 /**
- * I can't decide if I should make this runtime or not. DavidException represents different exceptions that occurred
- * while executing the interaction input on the serverside. These exceptions are often transferred all the way to the
- * user. Therefore they have more structure so that they can be localized and properly shown to the user.
+ * DavidException represents different exceptions that occurred while executing the interaction input on the serverside.
+ * These exceptions are often transferred all the way to the user. Therefore they have more structure so that they can
+ * be localized and properly shown to the user.
  */
 public class DavidException extends SlingException {
 
     /*
-    errorCodes follow hierarchical dot notation, are documented in David documentation and can be expanded by the
+    errorCodes follow hierarchical dot notation. They are documented in David documentation and can be expanded by the
     user. Example: SYNTAX.OPERATOR.<OPERATOR_NAME>.23 or CONSTRAINT.USER.<CONSTRAINT_NAME>.3. The syntax is not
     clear yet at the time of the writing.
      */
