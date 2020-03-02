@@ -183,9 +183,21 @@ Interaction is a list of D* statements that is sent as text using the session. T
 
 As a minimum, response will always include information, if the interaction was successful or not. And if it was not, it will also include the error code and localizable message.
 
-### 3.1 Protocol interaction diagram
+### 3.1 Code example
 
-TBD.
+```java
+DSessionParams params = new DSessionParams()
+    .setAddress(new InetSocketAddress(hostname, port))
+    .setUsername(username)
+    .setPassword(password)
+    .setTimeout(timeout)
+    .setMaxTuples(maxtuples)
+;
+DSession session = new DSession(params);
+DResult result = session.request(deestarInput);
+// ... make as many requests as you want ...
+session.close();
+```
 
 ### 4. Canonical string representations for all the types
 
