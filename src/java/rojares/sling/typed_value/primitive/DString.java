@@ -1,13 +1,15 @@
-package rojares.sling.type;
+package rojares.sling.typed_value.primitive;
 
 import rojares.sling.SlingException;
+import rojares.sling.typed_value.DType;
+import rojares.sling.typed_value.DValue;
 
 /**
  * DString is the same as Java String but without control characters except tab and linefeed
  * Unfortunately Java's string is still a little constrained to first plane unicode with it's 16-bit but the issue of
  * whether the characters of David are 32-bit is still an open issue. For now they are 16-bit.
  */
-public class DString implements DValue {
+public class DString implements DPrimitive {
 
     private String value;
 
@@ -19,8 +21,12 @@ public class DString implements DValue {
      */
     public DString(String literal) {
         if (literal.equalsIgnoreCase("NULL")) this.value = null;
-        else if (literal.charAt('>') this.value = literal.substring(1); // everything after >, nothing needs escaping
-        else throw new SlingException("String literal coming over network must start with > character.")
+        else if (literal.startsWith(">")) this.value = literal.substring(1); // everything after >, nothing needs escaping
+        else throw new SlingException("String literal coming over network must start with > character.");
+    }
+
+    public DType getType() {
+        return DType.STRING;
     }
 
     public String getString() {

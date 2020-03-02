@@ -1,18 +1,49 @@
 package rojares.sling;
 
-import rojares.sling.parser.ResponseParser;
-import rojares.sling.type.*;
+import rojares.sling.typed_value.*;
+import rojares.sling.typed_value.collection.DTable;
+import rojares.sling.typed_value.primitive.DBoolean;
+import rojares.sling.typed_value.primitive.DInteger;
+import rojares.sling.typed_value.primitive.DString;
 
 import java.util.*;
-import java.io.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-
+/**
+ * This is very close to json but I like to do it myself to keep total control. Also I use now control characters so
+ * that I can avoid more complex parsing, delimiters and escapes
+ *
+ * DResult := [empty] | name_value_list
+ * name_value_list := name_value[FS]name_value[FS]...
+ * name_value := identifier=dvalue_literal
+ * identifier := [a-zA-Z_][a-zA-Z_0-9]*
+ */
 public class DResult {
 
-    Map<String, DValue> resultMap = new HashMap<String, DValue>();
+    private Map<String, DValue> resultMap = new HashMap<String, DValue>();
 
-    public DResult(BufferedReader in) {
-        this.resultMap = ResponseParser.parse(in);
+    public static Pattern FS_Pattern = Pattern.compile("[\u001C]");
+    public static Pattern identifierPattern = Pattern.compile("[a-zA-Z_][a-zA-Z_0-9]*=");
+
+    public DResult(StringBuilder response) {
+        if (response.length() == 0) return;
+        // First we split the response by name_value pairs with FS (File Separator, 28)
+        String[] nameValuePair = FS_Pattern.split(response);
+        for (int i = 0; i<nameValuePair.length; i++) {
+            Matcher m = identifierPattern.matcher(nameValuePair[i]);
+            if (m.lookingAt()) {
+                String identifier = m.group().substring(0, m.group().length()-1);
+                DValue value = DValue.parse(nameValuePair[i].substring(m.group().length()+1));
+            }
+            else {
+                throw new SlingException("Protocol error: Could not find identifier in string " + nameValuePair[i]);
+            }
+        }
+    }
+
+    public DType getType(String name) {
+        return resultMap.get(name).getType();
     }
 
     /**
@@ -35,10 +66,6 @@ public class DResult {
 
     public DTable getTable(String name) {
         return (DTable) resultMap.get(name);
-    }
-
-    public void reset() {
-        this.resultMap.clear();
     }
 
 }

@@ -1,5 +1,7 @@
 package rojares.sling;
 
+import java.util.regex.Pattern;
+
 /**
  * I can't decide if I should make this runtime or not. DavidException represents different exceptions that occurred
  * while executing the interaction input on the serverside. These exceptions are often transferred all the way to the
@@ -31,16 +33,41 @@ public class DavidException extends SlingException {
     String exceptionCausingInput;
     // the start counted from the beginning of exceptionCausingInput
     int exceptionStart;
+    // this is the most crucial position that caused the exception and must be between (inclusive) start and end
+    int exceptionPoint;
     // the end counted from the beginning of exceptionCausingInput
     int exceptionEnd;
 
-    public DavidException(String errorCode, String englishMessage, String exceptionCausingInput, int exceptionStart, int exceptionEnd) {
+    public DavidException(
+        String errorCode,
+        String englishMessage,
+        String exceptionCausingInput,
+        int exceptionStart,
+        int exceptionPoint,
+        int exceptionEnd
+    ) {
         // englishMessage is set as exception message
         super(englishMessage);
         this.errorCode = errorCode;
         this.englishMessage = englishMessage;
         this.exceptionCausingInput = exceptionCausingInput;
         this.exceptionStart = exceptionStart;
+        this.exceptionPoint = exceptionPoint;
         this.exceptionEnd = exceptionEnd;
+    }
+
+    /**
+     * errorcode[FS]englishMessage[FS]exceptionCausingInput[FS]exceptionStart[FS]exceptionPoint[FS]exceptionEnd
+     */
+    public static DavidException parse(StringBuilder errorResponse) {
+        String[] errorComponents = DResult.FS_Pattern.split(errorResponse);
+        return new DavidException(
+            errorComponents[0],
+            errorComponents[1],
+            errorComponents[2],
+            Integer.parseInt(errorComponents[3]),
+            Integer.parseInt(errorComponents[4]),
+            Integer.parseInt(errorComponents[5])
+        );
     }
 }

@@ -1,11 +1,13 @@
-package rojares.sling.type;
+package rojares.sling.typed_value.primitive;
 
 import rojares.sling.SlingException;
+import rojares.sling.typed_value.DType;
+import rojares.sling.typed_value.DValue;
 
 /**
  * DBoolean is the same as Boolean in java which has 3 possible values: true, false and null
  */
-public class DBoolean implements DValue {
+public class DBoolean implements DPrimitive {
 
     private Boolean value;
 
@@ -25,6 +27,10 @@ public class DBoolean implements DValue {
     public boolean booleanValue() {
         if (this.value == null) throw new SlingException("Can not convert null value to primitive boolean.");
         else return this.value.booleanValue();
+    }
+
+    public DType getType() {
+        return DType.BOOLEAN;
     }
 
     /**

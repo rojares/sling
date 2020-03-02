@@ -50,7 +50,7 @@ public class DSession implements AutoCloseable {
         socket = new Socket();
         try {
             // if the server does not answer or end it's response in EOT, then we should not wait forever
-            socket.connect(serverAddress, Sling.RESPONSE_TIMEOUT);
+            socket.connect(serverAddress, this.params.getTimeout());
             // network protocol is encoded in UTF-8
             out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
             in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
@@ -80,10 +80,9 @@ public class DSession implements AutoCloseable {
             /*
              We let the DResponse parse the response from server.
              In case of successful authentication the DResult is empty
-             Only a failed authentication will return a DavidException
+             Only a failed authentication will return a DavidException (or SlingException in case of unusual errors)
              */
             DResponse response = new DResponse(in, this.params);
-            if (response.isError()) throw new response.getDError();
 
             // bind DSessionParams to this open session
             params.bind(this);
@@ -99,11 +98,9 @@ public class DSession implements AutoCloseable {
      */
     public synchronized DResult request(String deestarInput) {
         if (out == null) throw new SlingException("Session is closed.");
-        Sling.checkForControlCharacters(deestarInput);
+        Sling.checkForControlCharactersExcept3(deestarInput);
         out.print(deestarInput + Sling.C_EOT);
-        DResponse response = new DResponse(in);
-        if (response.isError()) throw new SlingException("...", DError);
-        else return response.getResult();
+        return new DResponse(this.in, this.params).getDResult();
     }
 
     /**

@@ -19,9 +19,12 @@ public class DSessionParams {
         session.request(allServerParams());
     }
     private String allServerParams() {
-        return maxTuplesCommand();
+        return maxResponseSizeCommand() + maxTuplesCommand();
     }
 
+    public void unbind() {
+        this.boundSession = null;
+    }
     /* Connection params */
 
     private InetSocketAddress serverAddress;
@@ -52,14 +55,35 @@ public class DSessionParams {
         return this;
     }
 
+
     /* Server params */
+
+    /*
+    We set a limit to how large a response can be. This limit is expressed in characters (codepoints) in BMP.
+    When encoded in utf-8 they take 1-3 bytes but when stored into memory they take 2 bytes.
+    So the result will consume approximately 2 * limit of bytes in memory
+    The default is 20 million characters which will consume at least 40MB of memory.
+     */
+    private int maxResponseSize = 20_000_000;
+    public int getMaxResponseSize() {
+        return maxResponseSize;
+    }
+    public DSessionParams setMaxResponseSize(int maxResponseSize) {
+        if (maxResponseSize <= 0) maxResponseSize = Integer.MAX_VALUE;
+        this.maxResponseSize = maxResponseSize;
+        if (boundSession != null) boundSession.request(maxResponseSizeCommand());
+        return this;
+    }
+    private String maxResponseSizeCommand() {
+        return "admin(max_response_size, " + this.maxResponseSize + ");";
+    }
 
     // 0 means all tuples, clearly to maximum limit is Integer.MAX_VALUE
     private int maxTuples = 1000;
     public DSessionParams setMaxTuples(int maxTuples) {
         if (maxTuples < 0) maxTuples = 0;
-        if (boundSession != null) boundSession.request(maxTuplesCommand());
         this.maxTuples = maxTuples;
+        if (boundSession != null) boundSession.request(maxTuplesCommand());
         return this;
     }
     public int getMaxTuples() {

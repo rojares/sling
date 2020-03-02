@@ -1,11 +1,13 @@
-package rojares.sling.type;
+package rojares.sling.typed_value.primitive;
 
 import rojares.sling.SlingException;
+import rojares.sling.typed_value.DType;
+import rojares.sling.typed_value.DValue;
 
 /**
  * DInteger is the same as Long in java which is a signed 64bit integer.
  */
-public class DInteger implements DValue {
+public class DInteger implements DPrimitive {
 
     private Long value;
 
@@ -32,6 +34,11 @@ public class DInteger implements DValue {
         if (this.value == null) throw new SlingException("Can not convert null value to primitive long.");
         else return this.value.longValue();
     }
+
+    public DType getType() {
+        return DType.INTEGER;
+    }
+
     public String toString() {
         if (this.value == null) return null;
         else return this.value.toString();

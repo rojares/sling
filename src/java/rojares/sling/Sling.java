@@ -30,42 +30,28 @@ import java.util.regex.Pattern;
  */
 public class Sling {
 
-    /*
-    Timeout for reading response
-    If we have to wait idle 5 seconds and the EOT does not come we throw a timeout exception
-     */
-    public static int RESPONSE_TIMEOUT = 5_000;
-
-    /*
-    We set a limit to how large a response can be. This limit is expressed in characters (codepoints) in BMP.
-    When encoded in utf-8 they take 1-3 bytes but when stored into memory they take 2 bytes.
-    So the result will consume approximately 2 * limit of bytes in memory
-    Now I have set the limit to 20 million characters which will consume around 40MB of memory.
-     */
-    public static int RESPONSE_MAX_SIZE_IN_CHARS = 20_000_000;
-
     // EOT = END OF TRANSMISSION, this is used to signal to server that the request is over and the client is waiting
     // for response
     public static char C_EOT = 4;
     // When Sling inserts a newline it uses only LF character
-    public static char C_NEWLINE = 10;
-    static char C_ACK = 6;
-    static char C_NAK = 21;
+    public static final char C_NEWLINE = 10;
+    public static final char C_ACK = 6;
+    public static final char C_NAK = 21;
 
     // unicode defines 65 control characters, however David excludes from those control characters only first 32
     // control characters (the classic 0-31) and allows control characters between 128-159 that had printable
     // characters in CP-1252
-    public static Pattern PTR_CC = Pattern.compile("[\\x00-\\x1F]+");
+    public static final Pattern PTR_CC = Pattern.compile("[\\x00-\\x1F]+");
     // From these 32 control characters 3 are allowed as part of the string: TAB, CR and LF
-    public static Pattern PTR_CC_EXCEPT_3 = Pattern.compile("[\\x00-\\x1F&&[^\\t\\r\\n]]+");
+    public static final Pattern PTR_CC_EXCEPT_3 = Pattern.compile("[\\x00-\\x1F&&[^\\t\\r\\n]]+");
     // Newline is either LF (unix) alone or CRLF (windows) combination. Lonely CR is not considered newline.
-    public static Pattern PTR_NEWLINE = Pattern.compile("\\r?\\n");
+    public static final Pattern PTR_NEWLINE = Pattern.compile("\\r?\\n");
 
     /**
      * Reads from a reader characters until it matches a certain character or timeout occurs or the char limit is exceeded.
      * Returns all read characters in StringBuilder unless discard was true in which case the StringBuilder is empty.
      */
-    public static StringBuilder readUntil(Reader reader, char endChar, int maxlen, boolean discard) {
+    public static StringBuilder readUntil(Reader reader, DSessionParams params, boolean discard) {
 
         // declare local variables
         StringBuilder response = new StringBuilder();
@@ -76,30 +62,30 @@ public class Sling {
             while(true) {
                 chr = readChar(reader, response);
                 // response is fully received
-                if (chr == endChar) return response;
+                if (chr == C_EOT) return response;
                 // a response character was received so we add it to our buffer
                 if (!discard) response.append(chr);
                 // check if the response is longer than allowed
                 charCount++;
-                if (charCount > maxlen) {
+                if (charCount > params.getMaxResponseSize()) {
                     throw new SlingException(
                         "Protocol error: The response from server was too long. The upper size limit for the " +
-                        "response was " + maxlen + " characters and the server should know that. " +
-                        "Please contact the developer of David! " + printPartialResponseError(response)
+                        "response was " + params.getMaxResponseSize() + " characters and the server should know that. " +
+                        "Please contact the developer of David! " + printErroneousResponse(response)
                     );
                 }
             }
         }
         catch (SocketTimeoutException ste) {
             throw new SlingException(
-                "Input stream timed out after " + RESPONSE_TIMEOUT + "ms before the response was fully " +
-                "received from server. " + printPartialResponseError(response)
+                "Input stream timed out after " + params.getTimeout() + "ms before the response was fully " +
+                "received from server. " + printErroneousResponse(response)
             );
         }
         catch (IOException ioe) {
             throw new SlingException(
                 "Input stream encountered IO error with message: " + ioe.getMessage() + "\n" +
-                printPartialResponseError(response)
+                printErroneousResponse(response)
             );
         }
     }
@@ -114,17 +100,17 @@ public class Sling {
         if (ci == -1) {
             throw new SlingException(
                 "Socket input stream was closed while trying to read response from server. " +
-                printPartialResponseError(response)
+                printErroneousResponse(response)
             );
         }
         return (char) ci;
     }
 
-    static String printPartialResponseError(StringBuilder resp) {
+    public static String printErroneousResponse(StringBuilder resp) {
         int len = resp.length();
         int end = Math.min(len, 100);
         return
-            "Partial response was " + len + " characters. " +
+            "Erroneous response was " + len + " characters. " +
             "The start of the response received was:\n" + resp.substring(0, end)
         ;
     }
