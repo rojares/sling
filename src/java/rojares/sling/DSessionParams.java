@@ -1,10 +1,18 @@
 package rojares.sling;
 
-import java.net.InetSocketAddress;
+import java.net.InetAddress;
 
 /**
  * Class defining the recognized parameters of sling needed for connecting, authenticating and other configuration of
- * the session.
+ * the session. The parameters can be classified into 3 different categories:
+ * <dl>
+ *     <dt>Connection parameters</dt>
+ *     <dd>Parameters needed when creating the session</dd>
+ *     <dt>Clientside parameters</dt>
+ *     <dd>Parameters that affect only the client</dd>
+ *     <dt>Serverside parameters</dt>
+ *     <dd>Parameters used to configure the session on the server</dd>
+ * </dl>
  */
 public class DSessionParams {
 
@@ -25,22 +33,44 @@ public class DSessionParams {
     public void unbind() {
         this.boundSession = null;
     }
+
     /* Connection params */
 
-    private InetSocketAddress serverAddress;
-    private String username;
-    private String password;
-    public DSessionParams setAddress(InetSocketAddress serverAddress) {
-        this.serverAddress = serverAddress;
+    private InetAddress inetAddress = InetAddress.getLoopbackAddress();
+    public DSessionParams setInetAddress(InetAddress inetAddress) {
+        this.inetAddress = inetAddress;
         return this;
     }
+    public InetAddress getInetAddress() {
+        return this.inetAddress;
+    }
+
+    private int port = 3434; // this is the default port of David
+    public DSessionParams setPort(int port) {
+        this.port = port;
+        return this;
+    }
+    public int getPort() {
+        return this.port;
+    }
+
+    private String username;
     public DSessionParams setUsername(String username) {
         this.username = username;
         return this;
     }
+    public String getUsername() {
+        return this.username;
+    }
+
+
+    private String password;
     public DSessionParams setPassword(String password) {
         this.password = password;
         return this;
+    }
+    public String getPassword() {
+        return this.password;
     }
 
     /* Client params */
@@ -54,7 +84,6 @@ public class DSessionParams {
         this.timeout = timeout;
         return this;
     }
-
 
     /* Server params */
 

@@ -1,7 +1,5 @@
 package rojares.sling;
 
-import java.util.regex.Pattern;
-
 /**
  * DavidException represents different exceptions that occurred while executing the interaction input on the serverside.
  * These exceptions are often transferred all the way to the user. Therefore they have more structure so that they can

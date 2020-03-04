@@ -1,19 +1,16 @@
 package rojares.sling;
 
 import java.io.BufferedReader;
-import java.net.SocketTimeoutException;
 
 /**
- *
+ * DResponse keeps reading from a socket until it receives EOT, a timeout occurs or the maximum response length is reached.
+ * This method throws SlingException or it's subclass DavidException which are both runtime exceptions.
  */
 public class DResponse {
 
     DResult result = null;
 
-    /**
-     * DResponse keeps reading from a socket until it receives EOT, a timeout occurs or the maximum response length is reached.
-     * This method throws SlingException or it's subclass DavidException which are both runtime exceptions.
-     */
+
     public DResponse(BufferedReader reader, DSessionParams params) {
 
         // First thing we do is read the whole response (everything until EOT) in String and based on the first

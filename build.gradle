@@ -1,1 +1,67 @@
 apply plugin: 'java'
+apply plugin: 'maven-publish'
+
+group = 'rojares.sling'
+version = 'head'
+
+javadoc {
+    source = sourceSets.main.allJava
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/java']
+        }
+    }
+
+    test {
+        java {
+            srcDirs = ['test/java']
+        }
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
+
+repositories {
+    maven {
+        url "http://kiev.tv7.fi:8081/repository/maven-public/"
+    }
+}
+task showMeCache {
+    configurations.compile.each { println it }
+}
+dependencies {
+    testImplementation 'rojares.david:david:head'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.6.0'
+}
+
+publishing {
+	publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            versionMapping {
+                usage('java-api') {
+                    fromResolutionOf('runtimeClasspath')
+                }
+                usage('java-runtime') {
+                    fromResolutionResult()
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+			credentials {
+                username "deestar"
+                password "D*"
+            }
+            url = "http://kiev.tv7.fi:8081/repository/exodus"
+            allowInsecureProtocol = true
+        }
+    }
+}
+

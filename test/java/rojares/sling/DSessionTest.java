@@ -1,46 +1,43 @@
 package rojares.sling;
 
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
+import server.DavidServer;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.TestMethodOrder;
-
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class DSessionTest {
 
-    DServer server;
+    @BeforeAll
+    static void setup() {
+        DavidServer.start();
+    }
+
+    DSessionParams params = new DSessionParams();
     DSession clientSession;
 
-    @Before
-    public void setUp() {
-        server = new DServer();
-        clientSession = new DSession();
+    @BeforeEach
+    void init() {
+
     }
 
     @Test
-    @Order(1)
-    public connect() {
-        clientSession.connect(
-            new InetSocketAddress(InetAddress.getLoopbackAddress(), 3434),
-            "testuser",
-            "password",
-            new SlingParams().setMaxTuples(100)
-        );
+    void testCredentials() {
+        System.out.println("Trying to login with control character in username.");
+        params.setUsername("test\u0002");
+        params.setPassword("word");
+        Throwable exception = assertThrows(DavidException.class, () -> {
+            clientSession = new DSession(params);
+        });
+        System.out.println(exception.getMessage());
     }
 
-    @Before
-    public void tearDown() {
-        server.close();
+    @AfterEach
+    void tearDown() {
         clientSession.close();
+    }
+
+    @AfterAll
+    static void done() {
+        DavidServer.stop();
     }
 
 }

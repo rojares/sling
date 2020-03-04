@@ -6,6 +6,10 @@ import java.net.SocketTimeoutException;
 import java.util.regex.Pattern;
 
 /**
+ * Sling class contains static helper methods used to implement Sling.
+ *
+ * The user does not need to use it but I have put here some documentation about Sling library.
+ *
  * In David and thus Sling String type supports only Unicode Basic Multilingual Plane (BMP). The reason for this is
  * that most programming languages store the characters internally in UTF-16 and their string type does not work well
  * if you use characters outside of the BMP. Methods like length, reverse and split do not work correctly and great
@@ -25,8 +29,6 @@ import java.util.regex.Pattern;
  *
  * We could allow codepoints outside of BMP on the serverside but because the server is implemented in java that has
  * the above mentioned issues with codepoints outside of BMP we have decided to exclude them for now.
- *
- * This class contains all static variables and methods used in the library.
  */
 public class Sling {
 
@@ -44,8 +46,6 @@ public class Sling {
     public static final Pattern PTR_CC = Pattern.compile("[\\x00-\\x1F]+");
     // From these 32 control characters 3 are allowed as part of the string: TAB, CR and LF
     public static final Pattern PTR_CC_EXCEPT_3 = Pattern.compile("[\\x00-\\x1F&&[^\\t\\r\\n]]+");
-    // Newline is either LF (unix) alone or CRLF (windows) combination. Lonely CR is not considered newline.
-    public static final Pattern PTR_NEWLINE = Pattern.compile("\\r?\\n");
 
     /**
      * Reads from a reader characters until it matches a certain character or timeout occurs or the char limit is exceeded.

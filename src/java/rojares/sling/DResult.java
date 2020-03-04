@@ -11,13 +11,20 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * This is very close to json but I like to do it myself to keep total control. Also I use now control characters so
- * that I can avoid more complex parsing, delimiters and escapes
- *
- * DResult := [empty] | name_value_list
- * name_value_list := name_value[FS]name_value[FS]...
- * name_value := identifier=dvalue_literal
- * identifier := [a-zA-Z_][a-zA-Z_0-9]*
+ * DResult is a map that returns all those things that user himself asked the server to return using explicit return
+ * operator in the deestarInput that he sent in the request.
+ * If the deestarInput was:
+ * {@code
+ * return(x, /R1);
+ * return(y, 23);
+ * return(z, true);
+ * }
+ * Then the DResult would contain 3 entries:
+ * x => DTable
+ * y => DInteger
+ * z => DBoolean
+ * Because the user himself defined what was included in the result he should know it's type but he can also ask the
+ * of an entry with the getType method.
  */
 public class DResult {
 

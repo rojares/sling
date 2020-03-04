@@ -6,12 +6,11 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Sling client connects to David server by instantiating a DSession with needed configuration parameters and then
- * calling connect(). All the configurations parameters are in the DSessionParams. The connect() method takes only
- * the InetSocketAddress and authentication credentials that are set to null when closing. Therefore it is possible
- * to reconnect using the same DSession object, however there is no clear performance difference to be gained.
+ * Sling client connects to David server by instantiating a DSession with needed configuration parameters.
+ * Then DSession is used to send requests and to receive responses.
  *
- * So the client code will look something like this:
+ * The client code will look something like this:
+ * {@code
  * DSessionParams params = new DSessionParams()
  *      .setAddress(new InetSocketAddress(hostname, port))
  *      .setUsername(username)
@@ -23,15 +22,11 @@ import java.nio.charset.StandardCharsets;
  * DResult result = session.request(deestarInput);
  * ... make as many requests as you want ...
  * session.close()
+ * }
  */
 public class DSession implements AutoCloseable {
 
     DSessionParams params;
-
-    public DSession(DSessionParams params) {
-        this.params = params;
-    }
-
     /**
      * First socket is opened to the server.
      * Then the user is authenticated.
@@ -44,9 +39,12 @@ public class DSession implements AutoCloseable {
     Socket socket;
     PrintWriter out;
     BufferedReader in;
-    public synchronized void connect(InetSocketAddress serverAddress, String username, String password) {
 
+    public DSession(DSessionParams params) {
+
+        this.params = params;
         // open socket and streams
+        InetSocketAddress serverAddress = new InetSocketAddress(params.getInetAddress(), params.getPort());
         socket = new Socket();
         try {
             // if the server does not answer or end it's response in EOT, then we should not wait forever
@@ -67,12 +65,12 @@ public class DSession implements AutoCloseable {
              password:...<NEWLINE>
              <EOT>
              */
-            Sling.checkForControlCharacters(username);
-            Sling.checkForControlCharacters(password);
+            Sling.checkForControlCharacters(params.getUsername());
+            Sling.checkForControlCharacters(params.getPassword());
             out.print(
-                "username:" + username
+                "username:" + params.getUsername()
                 + Sling.C_NEWLINE
-                + "password:" + password
+                + "password:" + params.getPassword()
                 + Sling.C_EOT
             );
             out.flush();
@@ -94,7 +92,11 @@ public class DSession implements AutoCloseable {
     }
 
     /**
-     * Only one socket per session and therefore it needs to be synchronized.
+     * All interaction with David server is done by sending a request and resceiving a response. A request-response pair
+     * is called interaction. Accepted deestarInput is documented as part of the David project. Currently David accepts
+     * only characters from Unicode BMP so surrogate characters will cause David to throw an exception. Also the first
+     * 32 characters, called control characters (with the exception of TAB, CR and LF) are not allowed in deestarInput.
+     * Session has one socket and one can run only one interaction at a time. Therefore this method is synchronized.
      */
     public synchronized DResult request(String deestarInput) {
         if (out == null) throw new SlingException("Session is closed.");
@@ -104,7 +106,7 @@ public class DSession implements AutoCloseable {
     }
 
     /**
-     *
+     * Closes the socket and related streams. Also unbinds the parameters from the session.
      * @throws Exception if this resource cannot be closed. However I can not imagine why closing would not be
      * possible. The socket session surely can be just broken/discarded. The server-side will have a timeout that
      * will auto-close the session on it's end if it hasn't heard from the client.
