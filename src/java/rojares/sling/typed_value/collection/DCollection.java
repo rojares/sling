@@ -4,10 +4,13 @@ import rojares.sling.SlingException;
 import rojares.sling.typed_value.DValue;
 
 /**
- * collection_literal := T:table_literal
+ * DCollection is the parent interface of all collection values that David supports. Currently only DTable is supported.
  */
 public interface DCollection extends DValue {
 
+    /**
+     * Used internally to parse literals from the server.
+     */
     public static DCollection parse(String literal) {
 
         if (literal.startsWith("T:")) {

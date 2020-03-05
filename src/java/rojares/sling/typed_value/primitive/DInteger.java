@@ -5,15 +5,13 @@ import rojares.sling.typed_value.DType;
 import rojares.sling.typed_value.DValue;
 
 /**
- * DInteger is the same as Long in java which is a signed 64bit integer.
+ * DInteger is the same as Long in java which is a signed 64bit integer. In addition it contains the null value.
  */
 public class DInteger implements DPrimitive {
 
     private Long value;
 
     /**
-     * Used to construct the integer from a string literal
-     * -?[0-9]+|NULL (null is case-insensitive)
      * Copied from java.lang.Long documentation:
      * Parses the string argument as a signed decimal long. The characters in the string must all be decimal digits,
      * except that the first character may be an ASCII minus sign '-' (\u002D') to indicate a negative value

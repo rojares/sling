@@ -11,7 +11,7 @@ public class DSessionTest {
         DavidServer.start();
     }
 
-    DSessionParams params = new DSessionParams();
+    DSessionParams params = new DSessionParams().setUsername("test").setPassword("word");
     DSession clientSession;
 
     @BeforeEach
@@ -23,16 +23,23 @@ public class DSessionTest {
     void testCredentials() {
         System.out.println("Trying to login with control character in username.");
         params.setUsername("test\u0002");
-        params.setPassword("word");
-        Throwable exception = assertThrows(DavidException.class, () -> {
+        Throwable exception = assertThrows(SlingException.class, () -> {
             clientSession = new DSession(params);
         });
         System.out.println(exception.getMessage());
+        params.setUsername("test");
     }
-
+    /*
+    @Test
+    void testDTable() {
+        clientSession = new DSession(params);
+        DResult result = clientSession.request("return (x, /R1);");
+        System.out.println(result.getTable("x").toString());
+    }
+    */
     @AfterEach
     void tearDown() {
-        clientSession.close();
+        if (clientSession != null) clientSession.close();
     }
 
     @AfterAll

@@ -5,9 +5,9 @@ import rojares.sling.typed_value.DType;
 import rojares.sling.typed_value.DValue;
 
 /**
- * DString is the same as Java String but without control characters except tab and linefeed
- * Unfortunately Java's string is still a little constrained to first plane unicode with it's 16-bit but the issue of
- * whether the characters of David are 32-bit is still an open issue. For now they are 16-bit.
+ * DString is the same as Java String but without control characters except TAB, CR and LF
+ * Because support for characters outside of BMP is limited they are not allowed
+ * (meaning that David rejects surragate characters).
  */
 public class DString implements DPrimitive {
 
@@ -15,8 +15,8 @@ public class DString implements DPrimitive {
 
     /**
      * Used to construct the string from a string literal
-     * >sequence_of_zero_or_more_unicode_characters|NULL (null is case-insensitive)
-     * So the string must either start by character > or be the string NULL
+     * &gt;sequence_of_zero_or_more_unicode_characters|NULL (null is case-insensitive)
+     * So the string must either start by character &gt; or be the string NULL
      * I am not doi
      */
     public DString(String literal) {

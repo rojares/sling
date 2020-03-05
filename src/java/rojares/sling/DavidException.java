@@ -7,36 +7,67 @@ package rojares.sling;
  */
 public class DavidException extends SlingException {
 
-    /*
-    errorCodes follow hierarchical dot notation. They are documented in David documentation and can be expanded by the
-    user. Example: SYNTAX.OPERATOR.<OPERATOR_NAME>.23 or CONSTRAINT.USER.<CONSTRAINT_NAME>.3. The syntax is not
-    clear yet at the time of the writing.
+    private String errorCode;
+    /**
+     * errorCodes follow hierarchical dot notation. They are documented in David documentation and can be expanded by
+     * the user.<br>
+     * Example:
+     * <pre>SYNTAX.OPERATOR.OPERATOR_NAME.23</pre>
+     * or
+     * <pre>CONSTRAINT.USER.CONSTRAINT_NAME.3</pre>
+     * The syntax is not clear yet at the time of the writing.
      */
-    String errorCode;
+    public String getErrorCode() {
+        return errorCode;
+    }
 
-    /*
-    Whenever a David error is defined it must contain a textual message in english language. This is a fallback
-    mechanism that can be used when these exceptions are not shown to user or only developers.
-    This message can be localized or customized by using errorCode as a key to retrieve another message in different
-    language or with more user friendly explanation.
+    private String englishMessage;
+    /**
+     Whenever a David error is defined it must contain a textual message in english language. This is a fallback
+     mechanism that can be used when these exceptions are not shown to user or only developers.
+     This message can be localized or customized by using errorCode as a key to retrieve another message in different
+     language or with more user friendly explanation.
      */
-    String englishMessage;
+    public String getEnglishMessage() {
+        return englishMessage;
+    }
 
-    /*
-    When error occurs it is important to show to user what part of the interaction input caused the exception. When
-    the input is very large then only some lines before and after the exception causing area is included for context.
-    The linecount of how much context should be shown is configurable by the client. Also the start and end positions
+    String exceptionCausingInput;
+    /**
+     When error occurs it is important to show to user what part of the interaction input caused the exception. When
+     the input is very large then only some lines before and after the exception causing area is included for context.
+     The linecount of how much context should be shown is configurable by the client. Also the start and end positions
      of the exception causing input are provided so that the client can present the exception causing input nicely.
      */
-    String exceptionCausingInput;
-    // the start counted from the beginning of exceptionCausingInput
-    int exceptionStart;
-    // this is the most crucial position that caused the exception and must be between (inclusive) start and end
-    int exceptionPoint;
-    // the end counted from the beginning of exceptionCausingInput
-    int exceptionEnd;
+    public String getExceptionCausingInput() {
+        return exceptionCausingInput;
+    }
 
-    public DavidException(
+    int exceptionStart;
+    /**
+     * The start counted from the beginning of exceptionCausingInput
+     */
+    public int getExceptionStart() {
+        return exceptionStart;
+    }
+
+    int exceptionPoint;
+    /**
+     * This is the most crucial position that caused the exception and must be between (inclusive) start and end
+     */
+    public int getExceptionPoint() {
+        return exceptionPoint;
+    }
+
+    int exceptionEnd;
+    /**
+     * The end counted from the beginning of exceptionCausingInput
+     */
+    public int getExceptionEnd() {
+        return exceptionEnd;
+    }
+
+    DavidException(
         String errorCode,
         String englishMessage,
         String exceptionCausingInput,
@@ -57,8 +88,8 @@ public class DavidException extends SlingException {
     /**
      * errorcode[FS]englishMessage[FS]exceptionCausingInput[FS]exceptionStart[FS]exceptionPoint[FS]exceptionEnd
      */
-    public static DavidException parse(StringBuilder errorResponse) {
-        String[] errorComponents = DResult.FS_Pattern.split(errorResponse);
+    static DavidException parse(StringBuilder errorResponse) {
+        String[] errorComponents = Sling.FS_Pattern.split(errorResponse);
         return new DavidException(
             errorComponents[0],
             errorComponents[1],

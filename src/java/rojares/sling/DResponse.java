@@ -10,8 +10,7 @@ public class DResponse {
 
     DResult result = null;
 
-
-    public DResponse(BufferedReader reader, DSessionParams params) {
+    DResponse(BufferedReader reader, DSessionParams params) {
 
         // First thing we do is read the whole response (everything until EOT) in String and based on the first
         // character we create either DResult or DError
@@ -40,7 +39,7 @@ public class DResponse {
         }
     }
 
-    public DResult getDResult() {
+    DResult getDResult() {
         return this.result;
     }
 }

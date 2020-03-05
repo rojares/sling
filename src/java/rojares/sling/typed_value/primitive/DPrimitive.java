@@ -4,10 +4,7 @@ import rojares.sling.SlingException;
 import rojares.sling.typed_value.DValue;
 
 /**
- * primitive_literal := boolean_literal | integer_literal | string_literal
- * boolean_literal := B:(TRUE|FALSE|NULL) (case-insensitive)
- * integer_literal := I:(-?[0-9]+|NULL) (null is case-insensitive)
- * string_literal := S:(>sequence_of_zero_or_more_unicode_characters|NULL) (null is case-insensitive)
+ * DPrimitive is the parent interface of all primitive values that David supports.
  */
 public interface DPrimitive extends DValue {
 

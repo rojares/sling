@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
  * Then DSession is used to send requests and to receive responses.
  *
  * The client code will look something like this:
- * {@code
+ * <pre>
  * DSessionParams params = new DSessionParams()
  *      .setAddress(new InetSocketAddress(hostname, port))
  *      .setUsername(username)
@@ -22,24 +22,26 @@ import java.nio.charset.StandardCharsets;
  * DResult result = session.request(deestarInput);
  * ... make as many requests as you want ...
  * session.close()
- * }
+ * </pre>
  */
 public class DSession implements AutoCloseable {
 
     DSessionParams params;
-    /**
-     * First socket is opened to the server.
-     * Then the user is authenticated.
-     * Then the DSessionParams are sent to the server and the DSessionParams is bound to the
-     * session. This means that they have a handle to session and when the user changes parameters while the session
-     * is connected those parameter changes are automatically sent to server.
-     *
-     * TODO: Add SSL because password is sent in plaintext and nowadays everyone expects it.
-     */
+
     Socket socket;
     PrintWriter out;
     BufferedReader in;
 
+    /**
+     * <ul>
+     *     <li>First socket is opened to the server.</li>
+     *     <li>Then the user is authenticated.</li>
+     *     <li>Then the DSessionParams are sent to the server and the DSessionParams is bound to the session. This
+     *     means that they have a handle to session and when the user changes parameters while the session is connected
+     *     those parameter changes are automatically sent to server.</li>
+     * </ul>
+     * TODO: Add SSL because password is sent in plaintext and nowadays everyone expects it.
+     */
     public DSession(DSessionParams params) {
 
         this.params = params;
@@ -107,7 +109,7 @@ public class DSession implements AutoCloseable {
 
     /**
      * Closes the socket and related streams. Also unbinds the parameters from the session.
-     * @throws Exception if this resource cannot be closed. However I can not imagine why closing would not be
+     * Throws SlingException if this resource cannot be closed. However I can not imagine why closing would not be
      * possible. The socket session surely can be just broken/discarded. The server-side will have a timeout that
      * will auto-close the session on it's end if it hasn't heard from the client.
      */

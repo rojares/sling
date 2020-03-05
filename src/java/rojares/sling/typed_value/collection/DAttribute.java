@@ -2,23 +2,18 @@ package rojares.sling.typed_value.collection;
 
 import rojares.sling.SlingException;
 import rojares.sling.typed_value.DType;
-import rojares.sling.typed_value.primitive.DBoolean;
-import rojares.sling.typed_value.primitive.DInteger;
-import rojares.sling.typed_value.primitive.DPrimitive;
-import rojares.sling.typed_value.DValue;
-import rojares.sling.typed_value.primitive.DString;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
- * primitive_type:identifier
+ * DAttribute contains the type and name of an attribute
  */
 public class DAttribute {
 
-    DType type;
-    String name;
+    private DType type;
+    private String name;
 
+    /**
+     * Used internally to parse literals from the server.
+     */
     public DAttribute(String literal) {
         if (literal.startsWith("B:")) {
             this.type = DType.BOOLEAN;
@@ -37,11 +32,20 @@ public class DAttribute {
         this.name = literal.substring(2);
     }
 
+    /**
+     * @return DType is the type of this attribute
+     */
     public DType getType() {
         return this.type;
     }
-
+    /**
+     * @return String is the name of this attribute
+     */
     public String getName() {
         return this.name;
+    }
+
+    public String toString() {
+        return this.type.name() + ":" + this.name;
     }
 }

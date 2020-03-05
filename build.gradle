@@ -1,12 +1,8 @@
-apply plugin: 'java'
+apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 
 group = 'rojares.sling'
 version = 'head'
-
-javadoc {
-    source = sourceSets.main.allJava
-}
 
 sourceSets {
     main {
@@ -31,10 +27,9 @@ repositories {
         url "http://kiev.tv7.fi:8081/repository/maven-public/"
     }
 }
-task showMeCache {
-    configurations.compile.each { println it }
-}
+
 dependencies {
+    implementation 'com.github.freva:ascii-table:1.1.0'
     testImplementation 'rojares.david:david:head'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.6.0'
 }
@@ -56,8 +51,8 @@ publishing {
     repositories {
         maven {
 			credentials {
-                username "deestar"
-                password "D*"
+                username "$nexus_username"
+                password "$nexus_password"
             }
             url = "http://kiev.tv7.fi:8081/repository/exodus"
             allowInsecureProtocol = true
@@ -65,3 +60,14 @@ publishing {
     }
 }
 
+javadoc {
+    dependsOn 'build'
+    source = sourceSets.main.allJava
+    title = "project: $project.name / version: $version"
+}
+
+task javadocPublish (type: Copy) {
+    dependsOn javadoc
+    from 'build/docs/javadoc'
+    into "${javadoc_repository_path}/${project.name}"
+}
