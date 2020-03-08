@@ -1,5 +1,8 @@
 package rojares.sling;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -25,6 +28,8 @@ import java.nio.charset.StandardCharsets;
  * </pre>
  */
 public class DSession implements AutoCloseable {
+
+    Logger logger = LoggerFactory.getLogger(DSession.class);
 
     DSessionParams params;
 
@@ -69,12 +74,14 @@ public class DSession implements AutoCloseable {
              */
             Sling.checkForControlCharacters(params.getUsername());
             Sling.checkForControlCharacters(params.getPassword());
-            out.print(
+            String authRequest =
                 "username:" + params.getUsername()
                 + Sling.C_NEWLINE
                 + "password:" + params.getPassword()
                 + Sling.C_EOT
-            );
+            ;
+            logger.trace("Sending auth request: {}", Sling.formatCtrlChars(authRequest));
+            out.print(authRequest);
             out.flush();
 
             /*
@@ -103,7 +110,9 @@ public class DSession implements AutoCloseable {
     public synchronized DResult request(String deestarInput) {
         if (out == null) throw new SlingException("Session is closed.");
         Sling.checkForControlCharactersExcept3(deestarInput);
-        out.print(deestarInput + Sling.C_EOT);
+        String request = deestarInput + Sling.C_EOT;
+        logger.trace("Sending request: {}", Sling.formatCtrlChars(request));
+        out.print(request);
         return new DResponse(this.in, this.params).getDResult();
     }
 
@@ -124,6 +133,7 @@ public class DSession implements AutoCloseable {
         catch (SlingException se) {throw se;}
         catch (Exception ex) { throw new SlingException("Problem closing the session", ex); }
         finally {
+            logger.info("DSession is closed.");
             out = null;
             in = null;
             socket = null;

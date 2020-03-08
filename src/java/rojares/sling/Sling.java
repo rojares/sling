@@ -3,7 +3,10 @@ package rojares.sling;
 import java.io.IOException;
 import java.io.Reader;
 import java.net.SocketTimeoutException;
+import java.nio.CharBuffer;
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Sling class contains static helper methods used to implement Sling.
@@ -32,6 +35,8 @@ import java.util.regex.Pattern;
  */
 public class Sling {
 
+    static Logger logger = LoggerFactory.getLogger(Sling.class);
+
     /**
      * EOT = END OF TRANSMISSION, this is used to signal to server that the request is over and the client is waiting
      */
@@ -41,11 +46,11 @@ public class Sling {
      */
     public static final char C_NEWLINE = 10;
     /**
-     * Control character ACK dec:06
+     * Control character ACK hex:06
      */
     public static final char C_ACK = 6;
     /**
-     * Control character NAK dec:21
+     * Control character NAK hex:15
      */
     public static final char C_NAK = 21;
 
@@ -88,9 +93,14 @@ public class Sling {
             while(true) {
                 chr = readChar(reader, response);
                 // response is fully received
-                if (chr == C_EOT) return response;
+                if (chr == C_EOT) {
+                    return response;
+                }
                 // a response character was received so we add it to our buffer
-                if (!discard) response.append(chr);
+                if (!discard) {
+                    //logger.trace("Char {} added to the response.", Sling.formatCtrlChars(chr));
+                    response.append(chr);
+                }
                 // check if the response is longer than allowed
                 charCount++;
                 if (charCount > params.getMaxResponseSize()) {
@@ -114,6 +124,37 @@ public class Sling {
                 printErroneousResponse(response)
             );
         }
+    }
+
+    private static String formatCtrlChars(StringBuilder sb) {
+        if (sb.length() == 0) return "[EMPTY]";
+        for(int i=0; i<sb.length(); i++) {
+            int cp = sb.codePointAt(i);
+            if (cp < 32) {
+                String s;
+                int incr;
+                if (cp == 4) s = "[EOT]";
+                else if (cp == 6) s = "[ACK]";
+                else if (cp == 9) s = "[TAB]";
+                else if (cp == 10) s = "[LF]";
+                else if (cp == 13) s = "[CR]";
+                else if (cp == 21) s = "[NAK]";
+                else if (cp == 28) s = "[FS]";
+                else if (cp == 29) s = "[GS]";
+                else if (cp == 30) s = "[RS]";
+                else if (cp == 31) s = "[US]";
+                else s = "[" + Integer.toHexString(cp).toUpperCase() + "]";
+                sb.replace(i, i + 1, s);
+                i += s.length() - 1;
+            }
+        }
+        return sb.toString();
+    }
+    static String formatCtrlChars(String s) {
+        return formatCtrlChars(new StringBuilder(s));
+    }
+    static String formatCtrlChars(char chr) {
+        return formatCtrlChars(new StringBuilder().append(chr));
     }
 
     /**

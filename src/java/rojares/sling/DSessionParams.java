@@ -27,21 +27,28 @@ public class DSessionParams {
      */
     private DSession boundSession;
     void bind(DSession session) {
+        if (maxTuples == defaultMaxTuples)
         if (this.boundSession != null) {
             throw new SlingException("This DSessionParams is already bound to another session");
         }
         this.boundSession = session;
-        session.request(allServerParams());
+        String initParams = getInitialNonDefaultParams();
+        if (initParams.length() > 0) session.request(initParams);
     }
-    private String allServerParams() {
-        return maxResponseSizeCommand() + maxTuplesCommand();
+    private String getInitialNonDefaultParams() {
+        String s = "";
+        if (maxResponseSize != defaultMaxResponseSize) s += maxResponseSizeCommand();
+        if (maxTuples != defaultMaxTuples) s += maxTuplesCommand();
+        return s;
     }
 
     void unbind() {
         this.boundSession = null;
     }
 
-    /* Connection params */
+
+    /* CONNECTION PARAMS */
+
 
     private InetAddress inetAddress = InetAddress.getLoopbackAddress();
     /**
@@ -100,7 +107,9 @@ public class DSessionParams {
         return this.password;
     }
 
-    /* Client params */
+
+    /* CLIENT PARAMS */
+
 
     // timeout waiting for response
     private int timeout = 5_000;
@@ -117,12 +126,12 @@ public class DSessionParams {
         return timeout;
     }
 
-    /* Server params */
 
-    /*
+    /* SERVER PARAMS */
 
-     */
-    private int maxResponseSize = 20_000_000;
+
+    private int defaultMaxResponseSize = 20_000_000;
+    private int maxResponseSize = defaultMaxResponseSize;
     /**
      * Server parameter.<br>
      * We set a limit to how large a response can be. This limit is expressed in characters (codepoints) in BMP.
@@ -134,6 +143,8 @@ public class DSessionParams {
      */
     public DSessionParams setMaxResponseSize(int maxResponseSize) {
         if (maxResponseSize <= 0) maxResponseSize = Integer.MAX_VALUE;
+        if (this.maxResponseSize == maxResponseSize) return this;
+        // real change happened
         this.maxResponseSize = maxResponseSize;
         if (boundSession != null) boundSession.request(maxResponseSizeCommand());
         return this;
@@ -145,7 +156,8 @@ public class DSessionParams {
         return maxResponseSize;
     }
 
-    private int maxTuples = 1000;
+    private int defaultMaxTuples = 1000;
+    private int maxTuples = defaultMaxTuples;
     /**
      * Server parameter.<br>
      * 0 means all tuples, the maximum limit is Integer.MAX_VALUE
@@ -154,6 +166,8 @@ public class DSessionParams {
      */
     public DSessionParams setMaxTuples(int maxTuples) {
         if (maxTuples < 0) maxTuples = 0;
+        if (this.maxTuples == maxTuples) return this;
+        // real change happened
         this.maxTuples = maxTuples;
         if (boundSession != null) boundSession.request(maxTuplesCommand());
         return this;

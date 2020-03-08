@@ -18,8 +18,11 @@ sourceSets {
     }
 }
 
+// enables jUnit 5 platform
 test {
     useJUnitPlatform()
+    // set log level for tests
+    systemProperty 'org.slf4j.simpleLogger.defaultLogLevel', 'trace'
 }
 
 repositories {
@@ -29,8 +32,15 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.freva:ascii-table:1.1.0'
+    // david server
     testImplementation 'rojares.david:david:head'
+    // ascii tables to support test output
+    implementation 'com.github.freva:ascii-table:1.1.0'
+    // slf4j api
+    implementation 'org.slf4j:slf4j-api:1.7.30'
+    // slf4j simple binding
+    implementation 'org.slf4j:slf4j-simple:1.7.30'
+    // jUnit 5
     testImplementation 'org.junit.jupiter:junit-jupiter:5.6.0'
 }
 
