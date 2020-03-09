@@ -37,6 +37,9 @@ public class DInteger implements DPrimitive {
         return DType.INTEGER;
     }
 
+    /**
+     * @return the string that java.lang.Integer returns, or java null
+     */
     public String toString() {
         if (this.value == null) return null;
         else return this.value.toString();

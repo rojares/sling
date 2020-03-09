@@ -249,6 +249,8 @@ Here I present the result in ebnf format. The control characters used are:
 * Unit Separator, US, hex: 1F
 
 ```
+whitespace: [ \t\n\x0B\f\r];
+
 result: name_value? ( '\u001C' name-value )*;
 name_value: identifier '=' dvalue_literal;
 identifier: [a-zA-Z_][a-zA-Z_0-9]*;
@@ -261,10 +263,10 @@ string_literal: 'S:' ( '>' [bmp_minus_control3]* ) | 'NULL'; // case-insensitive
 
 collection_literal: table_literal;
 table_literal: 'T:' header_literal '\u001D' body_literal;
-header_literal: 'HEADER' attribute_literal? ( '\u001F' attribute_literal )*;
+header_literal: 'HEADER' whitespace+ attribute_literal? ( '\u001F' attribute_literal )*;
 attribute_literal: primitive_type ':' identifier;
 primitive_type: 'B' | 'I' | 'S';
-body_literal: 'BODY' row_literal? ( '\u001E' row_literal )*;
+body_literal: 'BODY' whitespace+ row_literal? ( '\u001E' row_literal )*;
 row_literal: primitive_literal? ( '\u001F' primitive_literal )*;
 ```
 

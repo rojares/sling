@@ -32,4 +32,12 @@ public class DString implements DPrimitive {
     public String getString() {
         return this.value;
     }
+
+    /**
+     * @return the string value, or java null
+     */
+    public String toString() {
+        if (this.value == null) return null;
+        else return this.value;
+    }
 }

@@ -1,6 +1,9 @@
 package rojares.sling.typed_value.collection;
 
 import com.github.freva.asciitable.AsciiTable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import rojares.sling.Sling;
 import rojares.sling.SlingException;
 import rojares.sling.typed_value.DType;
 
@@ -25,6 +28,8 @@ import java.util.regex.Pattern;
  */
 public class DTable implements DCollection, Iterable<DRow> {
 
+    Logger logger = LoggerFactory.getLogger(DTable.class);
+
     private DHeader header;
     private DBody body;
     private static Pattern tableLiteralPattern = Pattern.compile(
@@ -35,13 +40,14 @@ public class DTable implements DCollection, Iterable<DRow> {
      * Only Sling uses the construct DTable from a literal received from the server
      */
     public DTable(String literal) {
+        logger.trace("DTable literal: {}", Sling.formatCtrlChars(literal));
         Matcher m = tableLiteralPattern.matcher(literal);
         if (m.matches()) {
             this.header = new DHeader(m.group(1));
-            this.body = new DBody(this.header, m.group(1));
+            this.body = new DBody(this.header, m.group(2));
         }
         else {
-            throw new SlingException("Unable to parse DTable literal. The literal was: " + literal);
+            throw new SlingException("Unable to parse DTable literal. The literal was: " + Sling.formatCtrlChars(literal));
         }
     }
 

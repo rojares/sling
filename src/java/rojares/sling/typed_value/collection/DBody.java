@@ -34,7 +34,7 @@ public class DBody {
         for(int i=0; i<cardinality(); i++) {
             DRow row = rows.get(i);
             for (int j = 0; j < this.header.degree(); j++) {
-                arr[i][j] = row.getPrimitive(i).toString();
+                arr[i][j] = row.getPrimitive(j).toString();
             }
         }
         return arr;

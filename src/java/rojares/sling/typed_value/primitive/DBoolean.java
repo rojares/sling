@@ -34,7 +34,7 @@ public class DBoolean implements DPrimitive {
     }
 
     /**
-     * @return true or false in lowercase because that's what java.lang.Boolean does
+     * @return true or false in lowercase because that's what java.lang.Boolean does, or java null
      */
     public String toString() {
         if (this.value == null) return null;

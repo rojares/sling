@@ -11,5 +11,6 @@
     <orderEntry type="library" scope="TEST" name="Gradle: org.slf4j:slf4j-api:1.7.30" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: rojares.david:david:head" level="project" />
     <orderEntry type="module" module-name="sling.main" scope="TEST" />
+    <orderEntry type="library" scope="TEST" name="Gradle: org.apache.commons:commons-collections4:4.4" level="project" />
   </component>
 </module>

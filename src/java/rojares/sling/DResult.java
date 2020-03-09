@@ -1,18 +1,17 @@
 package rojares.sling;
 
+import org.apache.commons.collections4.map.ListOrderedMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rojares.sling.typed_value.*;
+import rojares.sling.typed_value.DType;
+import rojares.sling.typed_value.DValue;
 import rojares.sling.typed_value.collection.DTable;
 import rojares.sling.typed_value.primitive.DBoolean;
 import rojares.sling.typed_value.primitive.DInteger;
 import rojares.sling.typed_value.primitive.DString;
 
-import java.util.*;
+import java.util.Map;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static rojares.sling.Sling.identifierPattern;
 
 /**
  * DResult is a map that returns all those things that user himself asked the server to return using explicit return
@@ -36,24 +35,23 @@ public class DResult {
 
     Logger logger = LoggerFactory.getLogger(DResult.class);
 
-    private Map<String, DValue> resultMap = new HashMap<String, DValue>();
+    private Map<String, DValue> resultMap = new ListOrderedMap<String, DValue>();
 
     DResult(StringBuilder response) {
         if (response.length() == 0) return;
-        logger.trace("DResult: {}", response);
+        logger.trace("DResult: {}", Sling.formatCtrlChars(response.toString()));
         // First we split the response by name_value pairs with FS (File Separator, 28)
         String[] nameValuePair = Sling.FS_Pattern.split(response);
         for (int i = 0; i<nameValuePair.length; i++) {
-            logger.trace("DResult name-value pair {}: {}", i, nameValuePair[i]);
+            logger.trace("DResult name-value pair {}: {}", i, Sling.formatCtrlChars(nameValuePair[i]));
             Matcher m = Sling.identifierPattern.matcher(nameValuePair[i]);
             if (m.lookingAt()) {
                 String identifier = m.group().substring(0, m.group().length()-1);
-                logger.trace("DResult identifier: {}", identifier);
                 DValue value = DValue.parse(nameValuePair[i].substring(m.group().length()));
-                logger.trace("DResult value: {}", value);
+                resultMap.put(identifier, value);
             }
             else {
-                throw new SlingException("Protocol error: Could not find identifier in string " + nameValuePair[i]);
+                throw new SlingException("Protocol error: Could not find identifier in string " + Sling.formatCtrlChars(nameValuePair[i]));
             }
         }
     }
@@ -97,6 +95,22 @@ public class DResult {
      */
     public DTable getTable(String name) {
         return (DTable) resultMap.get(name);
+    }
+
+    /**
+     * Outputs all returned variables, nicely formatted
+     */
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Result\n");
+        for (Map.Entry<String, DValue> kv : resultMap.entrySet()) {
+            sb.append(kv.getKey());
+            sb.append(" = ");
+            DValue v = kv.getValue();
+            if (v.getType() == DType.TABLE) sb.append("\n");
+            sb.append(v.toString());
+            sb.append("\n");
+        }
+        return sb.toString();
     }
 
 }

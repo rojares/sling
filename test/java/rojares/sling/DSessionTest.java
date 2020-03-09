@@ -1,11 +1,17 @@
 package rojares.sling;
 
-import org.junit.jupiter.api.*;
-import static org.junit.jupiter.api.Assertions.*;
-
+import org.apache.commons.collections4.map.ListOrderedMap;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import server.DavidServer;
+
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 
 public class DSessionTest {
 
@@ -43,10 +49,30 @@ public class DSessionTest {
     }
 
     @Test
-    void testDTable() {
+    void testBasicQueries() {
+
         DSession clientSession = new DSession(params);
-        DResult result = clientSession.request("return (x, /R1);");
-        //System.out.println(result.getTable("x").toString());
+
+        Map<String, String> queryBatch = new ListOrderedMap();
+        queryBatch.put("relation", "/R1");
+        queryBatch.put("where1", "where(/R1, a=99 and b=true)");
+        queryBatch.put("where2", "where(/R1, a<99 and b=true)");
+        queryBatch.put("project", "project(/R1, {a,b})");
+        queryBatch.put("project_where", "project(where(/R1, a=99), {a,b})");
+        queryBatch.put("where_project", "where(project(/R1, {a,b}), a=99)");
+        queryBatch.put("insert", "insert(/R1, (a:1, b:false,c:\"Taras\"))");
+        queryBatch.put("update1", "update(/R1, {a=100})");
+        queryBatch.put("update2", "update(/R1, {a=100}, a=99 and b= true)");
+        queryBatch.put("delete1", "delete(/R1, a=100)");
+        queryBatch.put("delete2", "delete(/R1)");
+
+        DResult result;
+        for (Map.Entry<String, String> entry : queryBatch.entrySet()) {
+            String query = "return (" + entry.getKey() + ", " + entry.getValue() + ");";
+            logger.info("Running query: {}", query);
+            result = clientSession.request(query);
+            System.out.println(result.toString());
+        }
     }
 
     @AfterAll
