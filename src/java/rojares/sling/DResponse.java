@@ -42,7 +42,7 @@ public class DResponse {
                 throw new SlingException(
                     "Protocol error: Server response started with character (in decimal): " + chr +
                     "\nResponse must always start with ACK(6) or NAK(21)." +
-                    Sling.printErroneousResponse(response)
+                    Sling.formatCtrlChars(Sling.printErroneousResponse(response))
                 );
         }
     }

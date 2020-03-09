@@ -150,10 +150,10 @@ public class Sling {
         }
         return sb.toString();
     }
-    static String formatCtrlChars(String s) {
+    public static String formatCtrlChars(String s) {
         return formatCtrlChars(new StringBuilder(s));
     }
-    static String formatCtrlChars(char chr) {
+    public static String formatCtrlChars(char chr) {
         return formatCtrlChars(new StringBuilder().append(chr));
     }
 

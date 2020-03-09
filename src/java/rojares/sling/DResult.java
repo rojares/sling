@@ -1,5 +1,7 @@
 package rojares.sling;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rojares.sling.typed_value.*;
 import rojares.sling.typed_value.collection.DTable;
 import rojares.sling.typed_value.primitive.DBoolean;
@@ -32,17 +34,23 @@ import static rojares.sling.Sling.identifierPattern;
  */
 public class DResult {
 
+    Logger logger = LoggerFactory.getLogger(DResult.class);
+
     private Map<String, DValue> resultMap = new HashMap<String, DValue>();
 
     DResult(StringBuilder response) {
         if (response.length() == 0) return;
+        logger.trace("DResult: {}", response);
         // First we split the response by name_value pairs with FS (File Separator, 28)
         String[] nameValuePair = Sling.FS_Pattern.split(response);
         for (int i = 0; i<nameValuePair.length; i++) {
+            logger.trace("DResult name-value pair {}: {}", i, nameValuePair[i]);
             Matcher m = Sling.identifierPattern.matcher(nameValuePair[i]);
             if (m.lookingAt()) {
                 String identifier = m.group().substring(0, m.group().length()-1);
-                DValue value = DValue.parse(nameValuePair[i].substring(m.group().length()+1));
+                logger.trace("DResult identifier: {}", identifier);
+                DValue value = DValue.parse(nameValuePair[i].substring(m.group().length()));
+                logger.trace("DResult value: {}", value);
             }
             else {
                 throw new SlingException("Protocol error: Could not find identifier in string " + nameValuePair[i]);
