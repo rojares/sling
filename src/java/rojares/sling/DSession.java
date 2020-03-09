@@ -1,12 +1,16 @@
 package rojares.sling;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Sling client connects to David server by instantiating a DSession with needed configuration parameters.
@@ -111,8 +115,18 @@ public class DSession implements AutoCloseable {
         if (out == null) throw new SlingException("Session is closed.");
         Sling.checkForControlCharactersExcept3(deestarInput);
         String request = deestarInput + Sling.C_EOT;
+        
+        System.err.println("[Sling] sending request: " + request);
+        
         logger.trace("Sending request: {}", Sling.formatCtrlChars(request));
+        
         out.print(request);
+      
+        // FROM TARAS:
+        // do not forget to flush stream
+        // THIS WAS THE FREEZING ISSUE
+        out.flush();
+        
         return new DResponse(this.in, this.params).getDResult();
     }
 
