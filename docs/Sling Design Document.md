@@ -260,7 +260,7 @@ integer_literal: 'I:' ( '-'?[0-9]+ | 'NULL' ); // case-insensitive;
 string_literal: 'S:' ( '>' [bmp_minus_control3]* ) | 'NULL'; // case-insensitive;
 
 collection_literal: table_literal;
-table_literal: header_literal '\u001D' body_literal;
+table_literal: 'T:' header_literal '\u001D' body_literal;
 header_literal: 'HEADER' attribute_literal? ( '\u001F' attribute_literal )*;
 attribute_literal: primitive_type ':' identifier;
 primitive_type: 'B' | 'I' | 'S';
