@@ -42,12 +42,12 @@ public class DSessionTest {
         params.setUsername("test");
     }
 
-    /*@Test
+    @Test
     void testDTable() {
         DSession clientSession = new DSession(params);
         DResult result = clientSession.request("return (x, /R1);");
         //System.out.println(result.getTable("x").toString());
-    }*/
+    }
 
     @AfterAll
     static void done() {

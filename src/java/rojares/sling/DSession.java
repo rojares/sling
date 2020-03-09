@@ -112,19 +112,13 @@ public class DSession implements AutoCloseable {
      * Session has one socket and one can run only one interaction at a time. Therefore this method is synchronized.
      */
     public synchronized DResult request(String deestarInput) {
+
         if (out == null) throw new SlingException("Session is closed.");
+
         Sling.checkForControlCharactersExcept3(deestarInput);
         String request = deestarInput + Sling.C_EOT;
-        
-        System.err.println("[Sling] sending request: " + request);
-        
         logger.trace("Sending request: {}", Sling.formatCtrlChars(request));
-        
         out.print(request);
-      
-        // FROM TARAS:
-        // do not forget to flush stream
-        // THIS WAS THE FREEZING ISSUE
         out.flush();
         
         return new DResponse(this.in, this.params).getDResult();
