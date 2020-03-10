@@ -17,6 +17,7 @@ public class DHeader {
     private Map<String, DType> attributeMap = new HashMap<String, DType>();
 
     DHeader(String literal) {
+        if (literal.trim().length() == 0) return;
         String[] attributeLiterals = Sling.US_Pattern.split(literal);
         for(int i=0; i<attributeLiterals.length;i++) {
             DAttribute attr = new DAttribute(attributeLiterals[i]);

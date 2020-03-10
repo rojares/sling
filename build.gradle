@@ -22,7 +22,7 @@ sourceSets {
 test {
     useJUnitPlatform()
     // set log level for tests
-    systemProperty 'org.slf4j.simpleLogger.defaultLogLevel', 'trace'
+    systemProperty 'org.slf4j.simpleLogger.defaultLogLevel', 'info'
 }
 
 repositories {

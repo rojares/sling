@@ -22,7 +22,12 @@ public class DRow {
 
     public DRow(DHeader header, String literal) {
         this.header = header;
+
         String[] primitiveLiterals = Sling.US_Pattern.split(literal);
+        if (primitiveLiterals.length != header.degree()) {
+            throw new SlingException("Erroneous response: Row (" + literal + ") contained " + primitiveLiterals.length + " datums but the header contains " + header.degree() + " attributes.");
+        }
+
         for(int i=0; i<primitiveLiterals.length;i++) {
             DPrimitive dp = DPrimitive.parse(primitiveLiterals[i]);
             DAttribute attr = header.getAttribute(i);

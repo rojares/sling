@@ -15,6 +15,7 @@ public class DBody {
 
     DBody(DHeader header, String literal) {
         this.header = header;
+        if (literal.trim().length() == 0) return;
         String[] rows = RS_Pattern.split(literal);
         for(int i=0; i<rows.length;i++) {
             this.rows.add(new DRow(header, rows[i]));
